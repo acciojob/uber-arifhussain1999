@@ -39,6 +39,7 @@ public class AdminServiceImpl implements AdminService {
 		if(!adminOptional.isPresent()){
 			return null;
 		}
+
 		Admin admin = adminOptional.get();
 		admin.setPassword(password);
 		adminRepository1.save(admin);
@@ -48,23 +49,19 @@ public class AdminServiceImpl implements AdminService {
 	@Override
 	public void deleteAdmin(int adminId){
 		// Delete admin without using deleteById function
-		Optional<Admin> adminOptional = adminRepository1.findById(adminId);
-		if(!adminOptional.isPresent()){
-			return;
-		}
 		adminRepository1.deleteById(adminId);
 	}
 
 	@Override
 	public List<Driver> getListOfDrivers() {
 		//Find the list of all drivers
-      return driverRepository1.findAll();
+		return driverRepository1.findAll();
 	}
 
 	@Override
 	public List<Customer> getListOfCustomers() {
 		//Find the list of all customers
-     return customerRepository1.findAll();
+		return customerRepository1.findAll();
 	}
 
 }
