@@ -1,5 +1,7 @@
 package com.driver.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ public class Driver {
     private String password;
 
     @OneToOne(mappedBy = "driver" , cascade = CascadeType.ALL)
+    @JsonManagedReference
     Cab cab;
 
     @OneToMany(mappedBy = "driver" , cascade = CascadeType.ALL)

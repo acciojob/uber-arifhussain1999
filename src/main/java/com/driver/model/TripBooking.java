@@ -1,6 +1,7 @@
 package com.driver.model;
 
 import com.driver.model.TripStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -23,10 +24,12 @@ public class TripBooking {
 
     @ManyToOne
     @JoinColumn
+    @JsonIgnore
     Driver driver;
 
     @ManyToOne
     @JoinColumn
+    @JsonIgnore
     Customer customer;
 
     public TripBooking() {
