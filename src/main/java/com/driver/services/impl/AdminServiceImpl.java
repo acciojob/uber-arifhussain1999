@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.driver.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.driver.model.Admin;
@@ -26,9 +27,14 @@ public class AdminServiceImpl implements AdminService {
 	@Autowired
 	CustomerRepository customerRepository1;
 
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
 	@Override
 	public void adminRegister(Admin admin) {
 		//Save the admin in the database
+		String encodedPassword = passwordEncoder.encode(admin.getPassword());
+		admin.setPassword(encodedPassword);
 		adminRepository1.save(admin);
 	}
 
@@ -41,7 +47,8 @@ public class AdminServiceImpl implements AdminService {
 		}
 
 		Admin admin = adminOptional.get();
-		admin.setPassword(password);
+		String encodedPassword = passwordEncoder.encode(password);
+		admin.setPassword(encodedPassword);
 		adminRepository1.save(admin);
 		return admin;
 	}

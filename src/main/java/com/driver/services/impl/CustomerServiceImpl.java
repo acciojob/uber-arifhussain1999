@@ -40,33 +40,32 @@ public class CustomerServiceImpl implements CustomerService {
 	public TripBooking bookTrip(int customerId, String fromLocation, String toLocation, int distanceInKm) throws Exception{
 		//Book the driver with lowest driverId who is free (cab available variable is Boolean.TRUE). If no driver is available, throw "No cab available!" exception
 		//Avoid using SQL query
-
-		List<Driver> drivers = new ArrayList<>();
-		drivers = driverRepository2.findAll();
-
+		List<Driver> drivers = driverRepository2.findAll();
 		Driver currDriver = null;
-		for(Driver driver : drivers){
-			if(driver.getCab().getAvailable()){
+
+		for (Driver driver : drivers) {
+			if (driver.getCab().getAvailable()) {
 				currDriver = driver;
 				break;
 			}
 		}
 
-		if(currDriver == null){
+		// If no driver is available, throw an exception
+		if (currDriver == null) {
 			throw new Exception("No cab available!");
 		}
 
+		// Fetch customer by ID
 		Optional<Customer> customerOptional = customerRepository2.findById(customerId);
-
-		if(!customerOptional.isPresent()){
+		if (!customerOptional.isPresent()) {
 			throw new Exception("Customer is not present!");
 		}
 
+		// Set the driver's cab to unavailable
 		currDriver.getCab().setAvailable(false);
 		Customer currCustomer = customerOptional.get();
 
-
-
+		// Create new trip booking
 		TripBooking tripBooking = new TripBooking();
 		tripBooking.setFromLocation(fromLocation);
 		tripBooking.setToLocation(toLocation);
@@ -74,18 +73,14 @@ public class CustomerServiceImpl implements CustomerService {
 		tripBooking.setBill(0);
 		tripBooking.setStatus(TripStatus.CONFIRMED);
 		tripBooking.setDriver(currDriver);
-		tripBooking.setCustomer(customerOptional.get());
+		tripBooking.setCustomer(currCustomer);
 
-		List<TripBooking> tripBookings = currDriver.getTripBookingList();
-		tripBookings.add(tripBooking);
+		// Add tripBooking to customer and driver
+		currDriver.getTripBookingList().add(tripBooking);
+		currCustomer.getTripBookingList().add(tripBooking);
 
-		List<TripBooking> tripBookings2 = currCustomer.getTripBookingList();
-		tripBookings2.add(tripBooking);
-
-		customerRepository2.save(currCustomer);
-		driverRepository2.save(currDriver);
-		tripBookingRepository2.save(tripBooking);
-		return tripBooking;
+		// Save the tripBooking only
+		return tripBookingRepository2.save(tripBooking);
 	}
 
 	@Override

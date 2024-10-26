@@ -19,6 +19,11 @@ public class AdminController {
 	@Autowired
 	AdminServiceImpl adminService;
 
+	@GetMapping("/dashboard")
+	public String getAdminDashboard() {
+		return "Welcome to the Admin Dashboard!";
+	}
+
 	@PostMapping("/register")
 	public ResponseEntity<Void> registerAdmin(@RequestBody Admin admin){
 		adminService.adminRegister(admin);
