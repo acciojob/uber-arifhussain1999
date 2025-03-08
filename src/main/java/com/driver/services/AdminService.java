@@ -5,6 +5,7 @@ import java.util.List;
 import com.driver.model.Admin;
 import com.driver.model.Customer;
 import com.driver.model.Driver;
+import org.springframework.data.domain.Page;
 
 public interface AdminService {
 
@@ -14,7 +15,8 @@ public interface AdminService {
 
 	public void deleteAdmin(int adminId);
 
-	public List<Driver> getListOfDrivers();
+	List<Driver> getListOfDrivers(int page, int size);
+
 
 	public List<Customer> getListOfCustomers();
 }

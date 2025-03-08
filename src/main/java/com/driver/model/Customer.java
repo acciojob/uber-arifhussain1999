@@ -17,7 +17,7 @@ public class Customer {
 
     private String password;
 
-    @OneToMany(mappedBy = "customer" , cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer" , cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<TripBooking> tripBookingList = new ArrayList<>();
 
     public Customer() {

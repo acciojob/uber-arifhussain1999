@@ -5,6 +5,10 @@ import java.util.Optional;
 
 import com.driver.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +18,8 @@ import com.driver.model.Driver;
 import com.driver.repository.AdminRepository;
 import com.driver.repository.CustomerRepository;
 import com.driver.repository.DriverRepository;
+import org.springframework.cache.annotation.Cacheable;
+
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -60,14 +66,19 @@ public class AdminServiceImpl implements AdminService {
 	}
 
 	@Override
-	public List<Driver> getListOfDrivers() {
-		//Find the list of all drivers
-		return driverRepository1.findAll();
+	@Cacheable(value = "drivers")
+	public List<Driver> getListOfDrivers(int page, int size) {
+		System.out.println("Fetching drivers from database with pagination...");
+		Pageable pageable = PageRequest.of(page, size, Sort.by("driverId").ascending());
+		return driverRepository1.findAll(pageable).getContent();
 	}
 
+
 	@Override
+	@Cacheable(value = "customers")
 	public List<Customer> getListOfCustomers() {
 		//Find the list of all customers
+		System.out.println("Fetching customers from database...");
 		return customerRepository1.findAll();
 	}
 

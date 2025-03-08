@@ -2,17 +2,21 @@ package com.driver.services.impl;
 
 import com.driver.model.*;
 import com.driver.services.CustomerService;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.driver.repository.CustomerRepository;
 import com.driver.repository.DriverRepository;
 import com.driver.repository.TripBookingRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
+@Transactional
 public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
@@ -25,47 +29,55 @@ public class CustomerServiceImpl implements CustomerService {
 	TripBookingRepository tripBookingRepository2;
 
 	@Override
+	@CacheEvict(value = "customers", allEntries = true)
 	public void register(Customer customer) {
 		//Save the customer in database
 		customerRepository2.save(customer);
 	}
 
 	@Override
+	@CacheEvict(value = "customers", allEntries = true)
 	public void deleteCustomer(Integer customerId) {
 		// Delete customer without using deleteById function
 		customerRepository2.deleteById(customerId);
+	}
+
+	@Async
+	public CompletableFuture<Driver> findAvailableDriver() {
+		List<Driver> drivers = driverRepository2.findAll();
+		for (Driver driver : drivers) {
+			if (driver.getCab().getAvailable()) {
+				return CompletableFuture.completedFuture(driver);
+			}
+		}
+		return CompletableFuture.failedFuture(new Exception("No cab available!"));
+	}
+
+	@Async
+	public CompletableFuture<Customer> findCustomerById(int customerId) {
+		Optional<Customer> customerOptional = customerRepository2.findById(customerId);
+		if (!customerOptional.isPresent()) {
+			return CompletableFuture.failedFuture(new Exception("Customer is not present!"));
+		}
+		return CompletableFuture.completedFuture(customerOptional.get());
 	}
 
 	@Override
 	public TripBooking bookTrip(int customerId, String fromLocation, String toLocation, int distanceInKm) throws Exception{
 		//Book the driver with lowest driverId who is free (cab available variable is Boolean.TRUE). If no driver is available, throw "No cab available!" exception
 		//Avoid using SQL query
-		List<Driver> drivers = driverRepository2.findAll();
-		Driver currDriver = null;
 
-		for (Driver driver : drivers) {
-			if (driver.getCab().getAvailable()) {
-				currDriver = driver;
-				break;
-			}
-		}
+		CompletableFuture<Driver> driverFuture = findAvailableDriver();
+		CompletableFuture<Customer> customerFuture = findCustomerById(customerId);
 
-		// If no driver is available, throw an exception
-		if (currDriver == null) {
-			throw new Exception("No cab available!");
-		}
+		// Combine both async calls and wait for results
+		CompletableFuture.allOf(driverFuture, customerFuture).join();
 
-		// Fetch customer by ID
-		Optional<Customer> customerOptional = customerRepository2.findById(customerId);
-		if (!customerOptional.isPresent()) {
-			throw new Exception("Customer is not present!");
-		}
+		Driver currDriver = driverFuture.get();
+		Customer currCustomer = customerFuture.get();
 
-		// Set the driver's cab to unavailable
 		currDriver.getCab().setAvailable(false);
-		Customer currCustomer = customerOptional.get();
 
-		// Create new trip booking
 		TripBooking tripBooking = new TripBooking();
 		tripBooking.setFromLocation(fromLocation);
 		tripBooking.setToLocation(toLocation);
@@ -75,17 +87,15 @@ public class CustomerServiceImpl implements CustomerService {
 		tripBooking.setDriver(currDriver);
 		tripBooking.setCustomer(currCustomer);
 
-		// Add tripBooking to customer and driver
 		currDriver.getTripBookingList().add(tripBooking);
 		currCustomer.getTripBookingList().add(tripBooking);
 
-		// Save the tripBooking only
 		return tripBookingRepository2.save(tripBooking);
 	}
 
 	@Override
 	public void cancelTrip(Integer tripId){
-		//Cancel the trip having given trip Id and update TripBooking attributes accordingly
+		//Cancel the trip having given trip id and update TripBooking attributes accordingly
 		Optional<TripBooking> tripBookingOptional = tripBookingRepository2.findById(tripId);
 
 		if(!tripBookingOptional.isPresent()){
@@ -102,7 +112,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public void completeTrip(Integer tripId){
-		//Complete the trip having given trip Id and update TripBooking attributes accordingly
+		//Complete the trip having given trip id and update TripBooking attributes accordingly
 		Optional<TripBooking> tripBookingOptional = tripBookingRepository2.findById(tripId);
 
 		if(!tripBookingOptional.isPresent()){
