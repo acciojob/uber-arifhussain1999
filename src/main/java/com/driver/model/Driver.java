@@ -1,5 +1,6 @@
 package com.driver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -21,8 +22,10 @@ public class Driver {
     @JsonManagedReference
     Cab cab;
 
-    @OneToMany(mappedBy = "driver" , cascade = CascadeType.ALL)
-    List<TripBooking> tripBookingList = new ArrayList<>();
+    @OneToMany(mappedBy = "driver", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<TripBooking> tripBookingList;
+
 
     public Driver() {
     }

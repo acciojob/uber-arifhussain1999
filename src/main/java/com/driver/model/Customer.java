@@ -1,5 +1,6 @@
 package com.driver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
@@ -17,7 +18,8 @@ public class Customer {
 
     private String password;
 
-    @OneToMany(mappedBy = "customer" , cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "customer" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     List<TripBooking> tripBookingList = new ArrayList<>();
 
     public Customer() {
