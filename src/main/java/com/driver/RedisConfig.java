@@ -8,6 +8,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
@@ -22,7 +23,7 @@ public class RedisConfig {
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10)) // Cache expiry time
+                .entryTtl(Duration.ofMinutes(120)) // Cache expiry time
                 .disableCachingNullValues()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
@@ -30,4 +31,5 @@ public class RedisConfig {
                 .cacheDefaults(cacheConfig)
                 .build();
     }
+
 }

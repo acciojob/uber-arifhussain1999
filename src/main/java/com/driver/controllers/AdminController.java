@@ -3,10 +3,9 @@ package com.driver.controllers;
 import com.driver.model.Admin;
 import com.driver.model.Customer;
 import com.driver.model.Driver;
-import com.driver.services.AdminService;
+
 import com.driver.services.impl.AdminServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +18,7 @@ public class AdminController {
 
 	@Autowired
 	AdminServiceImpl adminService;
+
 
 	@GetMapping("/dashboard")
 	public String getAdminDashboard() {
@@ -44,8 +44,7 @@ public class AdminController {
 
 	@GetMapping("/listOfCustomers")
 	public List<Customer> listOfCustomers() {
-		List<Customer> listOfCustomers = adminService.getListOfCustomers();
-		return listOfCustomers;
+        return adminService.getListOfCustomers();
 	}
 
 	@GetMapping("/listOfDrivers")
